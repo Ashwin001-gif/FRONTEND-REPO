@@ -1,0 +1,84 @@
+.home-btn-global {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  color: #f8fafc;
+  cursor: pointer;
+  z-index: 9999;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  text-decoration: none;
+}
+
+.home-btn-global:hover {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: var(--blue-primary, #0061ff);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 30px rgba(0, 97, 255, 0.2);
+}
+
+.home-btn-global:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.home-btn-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0061ff, #00d2ff);
+  border-radius: 8px;
+  font-size: 14px;
+  color: white;
+  box-shadow: 0 0 15px rgba(0, 97, 255, 0.4);
+  transition: all 0.3s ease;
+}
+
+.home-btn-global:hover .home-btn-icon {
+  transform: rotate(-10deg) scale(1.1);
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.6);
+}
+
+.home-btn-text {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  opacity: 0.9;
+}
+
+/* Light Theme Adjustments */
+[data-theme="light"] .home-btn-global {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 97, 255, 0.1);
+  color: #0f172a;
+  box-shadow: 0 4px 20px rgba(0, 97, 255, 0.1);
+}
+
+[data-theme="light"] .home-btn-global:hover {
+  background: #ffffff;
+  box-shadow: 0 8px 30px rgba(0, 97, 255, 0.15);
+}
+
+/* Hide on mobile or move to a better position if needed */
+@media (max-width: 768px) {
+  .home-btn-global {
+    top: 16px;
+    left: 16px;
+    height: 40px;
+    padding: 0 12px;
+  }
+  .home-btn-text {
+    display: none; /* Icon only on mobile */
+  }
+}
