@@ -210,6 +210,7 @@ export default function FilesView({ onViewChange }) {
   };
 
   const getIconClass = (mimetype) => {
+    if (!mimetype) return 'doc';
     if (mimetype.includes('pdf')) return 'pdf';
     if (mimetype.includes('image')) return 'img';
     if (mimetype.includes('zip') || mimetype.includes('tar')) return 'zip';
@@ -218,6 +219,7 @@ export default function FilesView({ onViewChange }) {
   };
 
   const getIcon = (mimetype) => {
+    if (!mimetype) return 'fa-file';
     if (mimetype.includes('pdf')) return 'fa-file-pdf';
     if (mimetype.includes('image')) return 'fa-file-image';
     if (mimetype.includes('zip') || mimetype.includes('tar')) return 'fa-file-zipper';
