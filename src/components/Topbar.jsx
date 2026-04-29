@@ -2,6 +2,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { useSocket } from '../context/SocketContext';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { markNotificationsRead } from '../utils/api';
 
 const viewTitles = {
@@ -16,7 +17,8 @@ const viewTitles = {
 };
 
 export default function Topbar({ activeView, onViewChange, onMenuOpen }) {
-  const { toggleTheme } = useTheme();
+  const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const showToast = useToast();
   const { unreadCount, notifications, setUnreadCount } = useSocket();
   const [showDropdown, setShowDropdown] = useState(false);
@@ -46,15 +48,15 @@ export default function Topbar({ activeView, onViewChange, onMenuOpen }) {
 
       <div className="topbar-actions">
         <div className="topbar-nav-controls" style={{ marginRight: '10px' }}>
-          <button className="nav-btn" onClick={() => window.history.back()} title="Go Back">
+          <button className="nav-btn" onClick={() => navigate(-1)} title="Go Back">
             <i className="fa-solid fa-chevron-left"></i>
           </button>
-          <button className="nav-btn" onClick={() => window.history.forward()} title="Go Forward">
+          <button className="nav-btn" onClick={() => navigate(1)} title="Go Forward">
             <i className="fa-solid fa-chevron-right"></i>
           </button>
         </div>
-        <div className="topbar-btn" onClick={toggleTheme} title="Toggle theme">
-          <i className="fa-solid fa-circle-half-stroke"></i>
+        <div className="topbar-btn theme-toggle" onClick={toggleTheme} title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
+          <i className={`fa-solid ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i>
         </div>
         
         <div className="topbar-btn" title="Notifications" onClick={handleBellClick} style={{ position: 'relative' }}>

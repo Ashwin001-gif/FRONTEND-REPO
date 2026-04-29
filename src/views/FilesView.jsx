@@ -48,20 +48,24 @@ export default function FilesView({ onViewChange }) {
     fetchFiles();
   }, []);
 
-  const handleDownload = (file, isShared = false) => {
-    if (isShared) {
-      const myAccess = file.accessList?.[0];
-      if (myAccess && !myAccess.permissions?.download) {
-        // View-only mode — open Secure Viewer
-        setDecryptModal({ open: true, file, isShared, mode: 'secure_view' });
-        return;
-      }
+  const handleDownload = async (file, isShared = false) => {
+    // Try using session password first for smoother UX
+    const sessionPassword = sessionStorage.getItem('zk_master_password');
+    const mode = (isShared && file.accessList?.[0] && !file.accessList[0].permissions?.download) ? 'secure_view' : 'download';
+    
+    if (sessionPassword) {
+      // Temporarily set state for proceedWithDownload to use
+      setDecryptModal({ open: false, file, isShared, mode });
+      // We need to wait for state to update? No, we can just call it with the object
+      await proceedWithDownload(sessionPassword, { file, isShared, mode });
+    } else {
+      setDecryptModal({ open: true, file, isShared, mode });
     }
-    setDecryptModal({ open: true, file, isShared, mode: 'download' });
   };
 
-  const proceedWithDownload = async (password) => {
-    const { file, isShared, mode } = decryptModal;
+  const proceedWithDownload = async (password, currentConfig = null) => {
+    const config = currentConfig || decryptModal;
+    const { file, isShared, mode } = config;
     const userInfo = getUserInfo();
     const token = userInfo?.token;
 
@@ -70,9 +74,8 @@ export default function FilesView({ onViewChange }) {
       return;
     }
 
-    // Route to secure view if mode is secure_view
+    if (decryptModal.open) setDecryptModal({ open: false, file: null, isShared: false, mode: 'download' });
     if (mode === 'secure_view') {
-      setDecryptModal({ open: false, file: null, isShared: false, mode: 'download' });
       try {
         showToast('Decrypting for Secure View...', 'info');
         const encryptedBuffer = await downloadSharedWithMeFile(file._id, token);
@@ -110,15 +113,22 @@ export default function FilesView({ onViewChange }) {
       let fileKey;
 
       // 1. Fetch encrypted blob
+      console.log('Fetching encrypted file data...');
       if (isShared) {
         encryptedBuffer = await downloadSharedWithMeFile(file._id, token);
       } else {
         encryptedBuffer = await downloadEncryptedFile(file._id, token);
       }
       
+      if (!encryptedBuffer || encryptedBuffer.byteLength === 0) {
+        throw new Error('Downloaded file data is empty or invalid.');
+      }
+      
+      console.log('Deriving master key...');
       // 2. Cryptography setup
       const masterKey = await deriveMasterKey(password);
       
+      console.log('Decrypting file key...');
       // 3. Decrypt the file key
       if (isShared) {
         // Shared file: PKI Decryption flow
@@ -129,15 +139,18 @@ export default function FilesView({ onViewChange }) {
         const privateKeyBase64 = await decryptStringAES(encryptedBase64, ivBase64, masterKey);
         
         // Find my access record
-        const myAccess = file.accessList[0]; // Filtered by backend
+        const myAccess = file.accessList[0]; 
+        if (!myAccess || !myAccess.encryptedKeyForUser) throw new Error('No access record found for this file.');
         
         // Decrypt AES file key using RSA Private Key
         fileKey = await decryptAESKeyWithRSA(myAccess.encryptedKeyForUser, privateKeyBase64);
       } else {
         // Own file: Standard decryption flow
+        if (!file.encryptedKey || !file.keyIV) throw new Error('File encryption metadata is missing.');
         fileKey = await decryptFileKey(file.encryptedKey, file.keyIV, masterKey);
       }
       
+      console.log('Decrypting file content...');
       // 4. Decrypt the actual file
       const decryptedBuffer = await decryptFileData(encryptedBuffer, file.fileIV, fileKey);
       
@@ -177,8 +190,10 @@ export default function FilesView({ onViewChange }) {
         if (document.body.contains(a)) document.body.removeChild(a);
       }, 5000);
     } catch (error) {
-      console.error(error);
-      showToast('Decryption failed: Incorrect master password or corrupted file', 'error');
+      console.error('Decryption process failed:', error);
+      const isKeyError = error.name === 'OperationError' || error.message.includes('decryption failed') || error.message.includes('decrypt');
+      const errorMsg = isKeyError ? 'Incorrect Master Password. Please try again.' : `Error: ${error.message}`;
+      showToast(errorMsg, 'error');
     }
   };
 

@@ -19,10 +19,10 @@ export default function TermsOfService() {
 
           <div className="nav-actions">
             <div className="topbar-nav-controls">
-              <button className="nav-btn" onClick={() => window.history.back()} title="Go Back">
+              <button className="nav-btn" onClick={() => navigate(-1)} title="Go Back">
                 <i className="fa-solid fa-chevron-left"></i>
               </button>
-              <button className="nav-btn" onClick={() => window.history.forward()} title="Go Forward">
+              <button className="nav-btn" onClick={() => navigate(1)} title="Go Forward">
                 <i className="fa-solid fa-chevron-right"></i>
               </button>
             </div>

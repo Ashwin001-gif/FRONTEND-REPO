@@ -10,9 +10,27 @@ export function SocketProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const showToast = useToast();
+  const [token, setToken] = useState(() => {
+    const userInfoStr = localStorage.getItem('userInfo');
+    return userInfoStr ? JSON.parse(userInfoStr).token : null;
+  });
+  
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const userInfoStr = localStorage.getItem('userInfo');
+      const newToken = userInfoStr ? JSON.parse(userInfoStr).token : null;
+      if (newToken !== token) setToken(newToken);
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    // Listen for custom login events if needed
+    const interval = setInterval(handleStorageChange, 1000); 
 
-  const userInfoStr = localStorage.getItem('userInfo');
-  const token = userInfoStr ? JSON.parse(userInfoStr).token : null;
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [token]);
 
   useEffect(() => {
     if (!token) {
@@ -20,6 +38,8 @@ export function SocketProvider({ children }) {
         socket.close();
         setSocket(null);
       }
+      setNotifications([]);
+      setUnreadCount(0);
       return;
     }
     
@@ -43,7 +63,8 @@ export function SocketProvider({ children }) {
     setSocket(newSocket);
 
     newSocket.on('new_notification', (notification) => {
-      showToast(notification.message, 'info');
+      console.log('New notification received:', notification);
+      showToast(notification.message || 'New notification', 'info');
       setNotifications(prev => [notification, ...prev]);
       setUnreadCount(prev => prev + 1);
     });

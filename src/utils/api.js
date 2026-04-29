@@ -93,7 +93,7 @@ export const getUserFiles = async (token) => {
 };
 
 export const downloadEncryptedFile = async (fileId, token) => {
-  const response = await fetch(`${API_URL}/files/${fileId}/download`, {
+  const response = await fetch(`${API_URL}/files/download/${fileId}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!response.ok) {
@@ -135,7 +135,7 @@ export const getSharedFileMeta = async (shareId) => {
 };
 
 export const downloadSharedFile = async (shareId, password) => {
-  const response = await fetch(`${API_URL}/files/share/${shareId}`, {
+  const response = await fetch(`${API_URL}/files/share/${shareId}/download`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password }),
@@ -252,7 +252,7 @@ export const getSharedWithMeFiles = async (token) => {
 };
 
 export const downloadSharedWithMeFile = async (fileId, token) => {
-  const response = await fetch(`${API_URL}/files/${fileId}/download-shared`, {
+  const response = await fetch(`${API_URL}/files/shared-with-me/download/${fileId}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!response.ok) {
