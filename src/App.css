@@ -1297,6 +1297,7 @@ tr:hover .file-actions .btn { opacity: 1; }
 }
 .link-text {
   flex: 1;
+  min-width: 0; /* Fix flexbox text-overflow issue */
   padding: 11px 14px;
   font-size: 13px;
   color: var(--blue-bright);
